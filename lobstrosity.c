@@ -33,13 +33,17 @@ char* init_buffer(void) {
 
   tFile = fopen(TFileName, "r");
   if (tFile == NULL) {
+    fclose(tFile);
     return NULL;
   }
 
   if (fread(tBuf, 1, MaxText, tFile) < 512) {
-    //not enough text for an accurate assessment
+    /* not enough text for an accurate assessment */
+    fclose(tFile);
     return NULL;
   }
+
+  fclose(tFile);
 
   return tBuf;
 }
@@ -77,12 +81,46 @@ int determine_last_whitespace_pos(char *segment) {
 
 /*
  * initializes the display with the properly formatted text file contents
+ * returns true if successful, and vice versa
  *
  * NOTE: this does not handle the status portions of the display, nor border
  */
-void init_screen(char *tBuf) {
+bool init_screen(char *tBuf) {
   int bufPos = 0;
+  char lineBuf[MaxCols - 4];
+  char fullTextBuf[MaxText + 1];
 
-  //five lines for status
+  if (!init_ncurses()) {
+	printf("\nUnable to initialize ncurses on this terminal.\n");
+	return false;
+  }
+
+  fullTextBuf = init_buffer();
+  if (fullTextBuf == NULL) {
+	printf("\nUnable to read text for tutor utilization.\n");
+	return false;
+  }
+
+  /* five lines for status */
   for (int lineNo = 5; lineNo <= (MaxLines - 3); lineNo += 3) {
-	
+	/* not sure that this will do what I need here, but it's a start to
+	 * fleshing things out a bit, at least */
+	strncpy(lineBuf, fullTextBuf[bufPos], (MaxCols - 4));
+	bufPos += (MaxCols - 4);
+
+	mvprintw(lineNo, 2, lineBuf);
+  }
+
+  return true;
+}
+
+/* program entry point */
+int main(void) {
+  if (!init_screen) {
+	printf("Error is preventing proper program execution.");
+	return 1;
+  }
+
+  return 0;
+}
+
