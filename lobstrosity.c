@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ncurses.h>
-#include "my-nc_lobstutor.h"
+#include "lobstrosity.h"
 
 /*
  * as of right now this simply checks to verify that there are enough rows and
@@ -16,28 +16,28 @@
  *
  * returns false if unable to hold a proper display
  */
-bool test_capability(void) {
+/*bool test_capability(void) {
   if (MaxLines <= 10 || MaxCols < 40) {
 	return false;
   }
 
   return true;
-}
+}*/
 
 /*
  * reads the text file into a buffer and returns a pointer to it
  */
 char* init_buffer(void) {
   FILE *tFile;
-  char tBuf[MaxText + 1];
+  char tBuf[MAXTEXT + 1];
 
-  tFile = fopen(TFileName, "r");
+  tFile = fopen(TXTFILE, "r");
   if (tFile == NULL) {
     fclose(tFile);
     return NULL;
   }
 
-  if (fread(tBuf, 1, MaxText, tFile) < 512) {
+  if (fread(tBuf, 1, MAXTEXT, tFile) < 512) {
     /* not enough text for an accurate assessment */
     fclose(tFile);
     return NULL;
@@ -58,7 +58,7 @@ int determine_last_whitespace_pos(char *segment) {
   int ouah = strlen(segment);
   int pos;
 
-  if (ouah > (MaxLen - 4)) {
+  if (ouah > (MAXLINELEN - 4)) {
 	return -1;
   }
 
@@ -81,24 +81,28 @@ int determine_last_whitespace_pos(char *segment) {
 
 /*
  * initializes the display with the properly formatted text file contents
- * returns true if successful, and vice versa
+ * returns NULL instead of the buffer if not successful
  *
  * NOTE: this does not handle the status portions of the display, nor border
  */
-bool init_screen(char *tBuf) {
+char* init_screen(/*char *tBuf,*/ WINDOW *headsUp) {
   int bufPos = 0;
-  char lineBuf[MaxCols - 4];
-  char fullTextBuf[MaxText + 1];
+  char fullTextBuf[MAXTEXT + 1];
 
-  if (!init_ncurses()) {
+  if (!init_ncurses(headsUp)) {
 	printf("\nUnable to initialize ncurses on this terminal.\n");
-	return false;
+	return NULL;
   }
+
+  int MaxCols = (int)getmaxx(headsUp);
+  int MaxLines = (int)getmaxy(headsUp);
+  char lineBuf[MaxCols - 4];
 
   fullTextBuf = init_buffer();
   if (fullTextBuf == NULL) {
+	endwin();
 	printf("\nUnable to read text for tutor utilization.\n");
-	return false;
+	return NULL;
   }
 
   /* five lines for status */
@@ -111,16 +115,24 @@ bool init_screen(char *tBuf) {
 	mvprintw(lineNo, 2, lineBuf);
   }
 
-  return true;
+  return fullTextBuf;
 }
 
 /* program entry point */
 int main(void) {
-  if (!init_screen) {
+  WINDOW *headsUp; 
+
+  if (!init_screen(headsUp)) {
+	endwin();
 	printf("Error is preventing proper program execution.");
 	return 1;
   }
 
+  /* constants */
+  const int MaxCols = (int)getmaxx(headsUp);
+  const int MaxLines = (int)getmaxy(headsUp);
+
+  endwin();
   return 0;
 }
 
