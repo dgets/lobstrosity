@@ -29,6 +29,10 @@
  */
 //char* init_buffer(void) {
 void init_buffer(char* tBuf) {
+  #ifdef DEBUGGING
+	printf("Entered init_buffer()");
+  #endif
+
   FILE *tFile;
   //char tBuf[MAXTEXT + 1];
 
@@ -87,6 +91,10 @@ int determine_last_whitespace_pos(char *segment) {
  * NOTE: this does not handle the status portions of the display, nor border
  */
 char* init_screen(/*char *tBuf,*/ WINDOW *headsUp) {
+  #ifdef DEBUGGING
+	printf("Entered init_screeen()");
+  #endif
+
   int bufPos = 0;
   char fullTextBuf[MAXTEXT + 1];
 
@@ -111,7 +119,11 @@ char* init_screen(/*char *tBuf,*/ WINDOW *headsUp) {
   for (int lineNo = 5; lineNo <= (MaxLines - 3); lineNo += 3) {
 	/* not sure that this will do what I need here, but it's a start to
 	 * fleshing things out a bit, at least */
-	strncpy(lineBuf, fullTextBuf[bufPos], (MaxCols - 4));
+	//strncpy(lineBuf, fullTextBuf[bufPos], (MaxCols - 4));
+	#ifdef DEBUGGING
+		printf("Attempting memcpy()");
+	#endif
+	memcpy(lineBuf, fullTextBuf + bufPos, (MaxCols - 4));
 	bufPos += (MaxCols - 4);
 
 	mvprintw(lineNo, 2, lineBuf);
@@ -122,6 +134,10 @@ char* init_screen(/*char *tBuf,*/ WINDOW *headsUp) {
 
 /* program entry point */
 int main(void) {
+  #ifdef DEBUGGING
+	printf("Entering program");
+  #endif
+
   WINDOW *headsUp; 
 
   if (!init_screen(headsUp)) {
