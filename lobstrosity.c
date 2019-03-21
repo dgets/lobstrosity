@@ -27,25 +27,26 @@
 /*
  * reads the text file into a buffer and returns a pointer to it
  */
-char* init_buffer(void) {
+//char* init_buffer(void) {
+void init_buffer(char* tBuf) {
   FILE *tFile;
-  char tBuf[MAXTEXT + 1];
+  //char tBuf[MAXTEXT + 1];
 
   tFile = fopen(TXTFILE, "r");
   if (tFile == NULL) {
     fclose(tFile);
-    return NULL;
+    return; // NULL;
   }
 
   if (fread(tBuf, 1, MAXTEXT, tFile) < 512) {
     /* not enough text for an accurate assessment */
     fclose(tFile);
-    return NULL;
+    return; // NULL;
   }
 
   fclose(tFile);
 
-  return tBuf;
+  return; // tBuf;
 }
 
 /*
@@ -98,7 +99,8 @@ char* init_screen(/*char *tBuf,*/ WINDOW *headsUp) {
   int MaxLines = (int)getmaxy(headsUp);
   char lineBuf[MaxCols - 4];
 
-  fullTextBuf = init_buffer();
+  //fullTextBuf = init_buffer();
+  init_buffer(fullTextBuf);
   if (fullTextBuf == NULL) {
 	endwin();
 	printf("\nUnable to read text for tutor utilization.\n");
